@@ -4,7 +4,7 @@ from django.core.validators import validate_email
 from rest_framework import serializers
 
 
-class RegisterSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
