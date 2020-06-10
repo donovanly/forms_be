@@ -3,45 +3,51 @@ from rest_framework.serializers import ValidationError
 
 REQUIRED_FIELDS = {
     "label": str,
-    "required": bool,
     "type": str,
 }
 
-def validate_values(values, question_idx):
-    if not isinstance(values, list):
-        raise ValidationError(F'The field "values" in question {question_idx} must be a list.')
+def validate_question_options(labels, question_idx):
+    if not isinstance(labels, list):
+        raise ValidationError(F'The field "questionOptions" in question {question_idx} must be a list.')
     
     selected = 0
-    for value_idx, value in enumerate(values):
-        if "label" not in value:
-            raise ValidationError(F'The field "label" is missing from question {question_idx}, option {value_idx}.')
-        elif not isinstance(value['label'], str):
-            raise ValidationError(F'The type of the field "label" in question {question_idx}, option {value_idx} should be str.')
-        if "value" not in value:
-            raise ValidationError(F'The field "value" is missing from question {question_idx}, option {value_idx}.')
-        elif not isinstance(value['label'], str):
-            raise ValidationError(F'The type of the field "value" in question {question_idx}, option {value_idx} should be str.')
+    for label_idx, label in enumerate(labels):
+        if "label" not in label:
+            raise ValidationError(F'The field "label" is missing from question {question_idx}, option {label_idx}.')
+        elif not isinstance(label['label'], str):
+            raise ValidationError(F'The type of the field "label" in question {question_idx}, option {label_idx} should be str.')
+        if "label" not in label:
+            raise ValidationError(F'The field "label" is missing from question {question_idx}, option {label_idx}.')
+        elif not isinstance(label['label'], str):
+            raise ValidationError(F'The type of the field "label" in question {question_idx}, option {label_idx} should be str.')
 
-        if 'selected' in value and value['selected'] == True:
+        if 'selected' in label and label['selected'] == True:
             selected += 1
     return selected
 
-def validate_checkbox_group(question: dict, idx: int):
-    if "values" not in question:
-        raise ValidationError(F'The field "values" is missing in question {idx}.')
-    validate_values(question['values'], idx)
+def validate_checkboxes(question: dict, idx: int):
+    if "questionOptions" not in question:
+        raise ValidationError(F'The field "questionOptions" is missing in question {idx}.')
+    validate_question_options(question['questionOptions'], idx)
 
-def validate_select(question: dict, idx: int):
-    if "values" not in question:
-        raise ValidationError(F'The field "values" is missing in question {idx}.')
-    selected = validate_values(question['values'], idx)
+def validate_dropdown(question: dict, idx: int):
+    if "questionOptions" not in question:
+        raise ValidationError(F'The field "questionOptions" is missing in question {idx}.')
+    selected = validate_question_options(question['questionOptions'], idx)
     if selected > 1:
         raise ValidationError(F'More than one option in question {idx} cannot be selected.')
 
-def validate_radio_group(question: dict, idx: int):
-    if 'values' not in question:
-        raise ValidationError(F'The field "values" is missing in question {idx}.')
-    selected = validate_values(question['values'], idx)
+def validate_multiple_choice(question: dict, idx: int):
+    if 'questionOptions' not in question:
+        raise ValidationError(F'The field "questionOptions" is missing in question {idx}.')
+    selected = validate_question_options(question['questionOptions'], idx)
+    if selected > 1:
+        raise ValidationError(F'More than one option in question {idx} cannot be selected.')
+
+def validate_auto_complete(question: dict, idx: int):
+    if 'questionOptions' not in question:
+        raise ValidationError(F'The field "questionOptions" is missing in question {idx}.')
+    selected = validate_question_options(question['questionOptions'], idx)
     if selected > 1:
         raise ValidationError(F'More than one option in question {idx} cannot be selected.')
 
@@ -72,9 +78,11 @@ def validate_form(form: list):
 
 # Have to place this at the bottom of the module as these functions do not exist until this point
 VALIDATION_FUNCS = {
-    "checkbox-group": validate_checkbox_group,
+    "Checkboxes": validate_checkboxes,
+    "Dropdown": validate_dropdown,
+    "Multiple Choice": validate_multiple_choice,
+    "Auto Complete": validate_auto_complete,
+    "Short Text": validate_text,
+    "Long Text": validate_text,
     "number": validate_number,
-    "radio-group": validate_radio_group,
-    "select": validate_select,
-    "text": validate_text,
 }

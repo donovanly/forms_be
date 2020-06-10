@@ -8,8 +8,10 @@ class FormSerializer(serializers.ModelSerializer):
         fields = [
             'description',
             'form',
+            'id',
             'name'
         ]
+        read_only_fields = ['id']
 
 
     def validate_form(self, form):
