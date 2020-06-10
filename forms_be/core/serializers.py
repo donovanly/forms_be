@@ -6,7 +6,6 @@ class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
         fields = [
-            'description',
             'form',
             'id',
             'name'
