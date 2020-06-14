@@ -16,13 +16,13 @@ from .serializers import UserSerializer
 
 def augment_request_auth(request):
     request.POST._mutable = True
-    request.data['grant_type'] = 'password'
+    if request.data.get('grant_type') in ['', None]:
+        request.data['grant_type'] = 'password'
     request.data['client_id'] = settings.AUTH_CLIENT_ID
     request.data['client_secret'] = settings.AUTH_CLIENT_SECRET
     request.POST._mutable = False
 
 
-# @method_decorator(csrf_exempt, name='dispatch')
 class LoginView(OAuthLibMixin, APIView):
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
@@ -51,7 +51,6 @@ class LoginView(OAuthLibMixin, APIView):
         return response
 
 
-# @method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(OAuthLibMixin, APIView):
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS

@@ -6,11 +6,17 @@ class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
         fields = [
+            'created',
             'form',
             'id',
-            'name'
+            'name',
+            'updated',
         ]
-        read_only_fields = ['id']
+        read_only_fields = [
+            'created',
+            'id',
+            'updated',
+        ]
 
 
     def validate_form(self, form):
