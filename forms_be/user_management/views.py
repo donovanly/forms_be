@@ -32,20 +32,21 @@ class LoginView(OAuthLibMixin, APIView):
         augment_request_auth(request)
         url, headers, body, status = self.create_token_response(request)
         json_body = json.loads(body)
+        
         if status == 200:
             access_token = json.loads(body).get("access_token")
             if access_token is not None:
                 token = get_access_token_model().objects.get(token=access_token)
                 app_authorized.send(sender=self, request=request,token=token)
-                json_body['profile'] = {
+                response_body = {'access_token': access_token}
+                response_body['profile'] = {
                     'id': token.user.id,
                     'username': token.user.username,
                     'first_name': token.user.first_name,
                     'last_name': token.user.last_name,
                     'email': token.user.email
                 }
-        response = Response(json_body, status=status)
-
+        response = Response(response_body, status=status)
         for k, v in headers.items():
             response[k] = v
         return response
@@ -72,15 +73,15 @@ class RegisterView(OAuthLibMixin, APIView):
                             raise Exception(json.loads(body).get("error_description", ""))
                         json_body = json.loads(body)
                         token = get_access_token_model().objects.get(token=json_body.get("access_token"))
-
-                        json_body['profile'] = {
+                        response_body = {'access_token': json_body.get("access_token")}
+                        response_body['profile'] = {
                             'id': token.user.id,
                             'username': token.user.username,
                             'first_name': token.user.first_name,
                             'last_name': token.user.last_name,
                             'email': token.user.email
                         }
-                        return Response(json_body, status=token_status)
+                        return Response(response_body, status=token_status)
                 except Exception as e:
                     return Response(data={"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
